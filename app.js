@@ -831,40 +831,40 @@ function createMiddleRoad() {
 function createWalls() {
     const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
 
-    const southWall = createWallSegment(190, 6, -130);
+    const southWall = createWallSegment(228, 6, -156);
     walls.push(southWall);
     scene.add(southWall);
 
-    const northWall = createWallSegment(190, 6, 110);
+    const northWall = createWallSegment(228, 6, 132);
     walls.push(northWall);
     scene.add(northWall);
 
-    const westWallSouth = createWallSegmentVertical(6, -96, -125, -5);
+    const westWallSouth = createWallSegmentVertical(6, -116, -151, -5);
     walls.push(westWallSouth);
     scene.add(westWallSouth);
 
-    const westWallNorth = createWallSegmentVertical(6, -96, 5, 105);
+    const westWallNorth = createWallSegmentVertical(6, -116, 5, 127);
     walls.push(westWallNorth);
     scene.add(westWallNorth);
 
-    const eastWallSouth = createWallSegmentVertical(6, 96, -125, -5);
+    const eastWallSouth = createWallSegmentVertical(6, 116, -151, -5);
     walls.push(eastWallSouth);
     scene.add(eastWallSouth);
 
-    const eastWallNorth = createWallSegmentVertical(6, 96, 5, 105);
+    const eastWallNorth = createWallSegmentVertical(6, 116, 5, 127);
     walls.push(eastWallNorth);
     scene.add(eastWallNorth);
 
-    createGate(-95, -130, 'south');
-    createGate(0, -130, 'south_main');
-    createGate(95, -130, 'south');
+    createGate(-115, -156, 'south');
+    createGate(0, -156, 'south_main');
+    createGate(115, -156, 'south');
 
-    createGate(-95, 110, 'north');
-    createGate(0, 110, 'north_main');
-    createGate(95, 110, 'north');
+    createGate(-115, 132, 'north');
+    createGate(0, 132, 'north_main');
+    createGate(115, 132, 'north');
 
-    createGate(-96, 0, 'west');
-    createGate(96, 0, 'east');
+    createGate(-116, 0, 'west');
+    createGate(116, 0, 'east');
 }
 
 function createWallSegment(width, height, z) {
@@ -920,9 +920,9 @@ function loadCampusGLB() {
         function (gltf) {
             const campusModel = gltf.scene;
             
-            campusModel.position.set(0, 0, -50);
+            campusModel.position.set(0, 0, -100);
             campusModel.scale.set(15, 15, 15);
-            campusModel.rotation.y = 135;
+            campusModel.rotation.y = 180 * Math.PI / 180;
             
             campusModel.traverse(function (child) {
                 if (child.isMesh) {
