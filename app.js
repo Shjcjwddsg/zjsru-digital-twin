@@ -882,7 +882,7 @@ function createCampusBuildings() {
 function createRoads() {
     const roadMaterial = new THREE.MeshLambertMaterial({ color: 0x444444 });
 
-    const mainRoadH = new THREE.BoxGeometry(180, 0.2, 12);
+    const mainRoadH = new THREE.BoxGeometry(180, 0.2, 6);
     const mainRoadHM = new THREE.Mesh(mainRoadH, roadMaterial);
     mainRoadHM.position.set(0, 0.05, 0);
     mainRoadHM.receiveShadow = true;
@@ -896,14 +896,14 @@ function createRoads() {
     roads.push(centerLine);
     scene.add(centerLine);
 
-    const southVerticalRoad = new THREE.BoxGeometry(10, 0.2, 90);
+    const southVerticalRoad = new THREE.BoxGeometry(5, 0.2, 90);
     const southVRM = new THREE.Mesh(southVerticalRoad, roadMaterial);
     southVRM.position.set(0, 0.05, -55);
     southVRM.receiveShadow = true;
     roads.push(southVRM);
     scene.add(southVRM);
 
-    const northVerticalRoad = new THREE.BoxGeometry(10, 0.2, 85);
+    const northVerticalRoad = new THREE.BoxGeometry(5, 0.2, 85);
     const northVRM = new THREE.Mesh(northVerticalRoad, roadMaterial);
     northVRM.position.set(0, 0.05, 57);
     northVRM.receiveShadow = true;
@@ -911,7 +911,7 @@ function createRoads() {
     scene.add(northVRM);
 
     [-40, 40].forEach(x => {
-        const crossRoad = new THREE.BoxGeometry(8, 0.2, 70);
+        const crossRoad = new THREE.BoxGeometry(4, 0.2, 70);
         const crossRM = new THREE.Mesh(crossRoad, roadMaterial);
         crossRM.position.set(x, 0.05, -55);
         crossRM.receiveShadow = true;
@@ -922,7 +922,7 @@ function createRoads() {
 
 function createMiddleRoad() {
     const middleRoadMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
-    const middleRoad = new THREE.BoxGeometry(200, 0.3, 20);
+    const middleRoad = new THREE.BoxGeometry(200, 0.3, 10);
     const middleRoadMesh = new THREE.Mesh(middleRoad, middleRoadMaterial);
     middleRoadMesh.position.set(0, 0.05, 0);
     middleRoadMesh.receiveShadow = true;
@@ -942,7 +942,7 @@ function createMiddleRoad() {
 function createWalls() {
     const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
 
-    const southWall = createWallSegment(228, 6, -156);
+    const southWall = createWallSegment(228, 6, -131);
     walls.push(southWall);
     scene.add(southWall);
 
@@ -950,7 +950,7 @@ function createWalls() {
     walls.push(northWall);
     scene.add(northWall);
 
-    const westWallSouth = createWallSegmentVertical(6, -116, -151, -5);
+    const westWallSouth = createWallSegmentVertical(6, -116, -126, -5);
     walls.push(westWallSouth);
     scene.add(westWallSouth);
 
@@ -958,7 +958,7 @@ function createWalls() {
     walls.push(westWallNorth);
     scene.add(westWallNorth);
 
-    const eastWallSouth = createWallSegmentVertical(6, 116, -151, -5);
+    const eastWallSouth = createWallSegmentVertical(6, 116, -126, -5);
     walls.push(eastWallSouth);
     scene.add(eastWallSouth);
 
@@ -966,9 +966,9 @@ function createWalls() {
     walls.push(eastWallNorth);
     scene.add(eastWallNorth);
 
-    createGate(-115, -156, 'south');
-    createGate(0, -156, 'south_main');
-    createGate(115, -156, 'south');
+    createGate(-115, -131, 'south');
+    createGate(0, -131, 'south_main');
+    createGate(115, -131, 'south');
 
     createGate(-115, 132, 'north');
     createGate(0, 132, 'north_main');
@@ -1565,6 +1565,116 @@ function updateCompass() {
     const angle = Math.atan2(camera.position.x, -camera.position.z);
     const rotationDeg = angle * (180 / Math.PI);
     compass.style.setProperty('--rotation', `${rotationDeg}deg`);
+}
+
+function toggleMinimap() {
+    const minimapPanel = document.getElementById('minimapPanel');
+    const minimapToggle = document.getElementById('minimapToggle');
+    
+    minimapPanel.classList.toggle('show');
+    minimapToggle.classList.toggle('active');
+    
+    if (minimapPanel.classList.contains('show')) {
+        drawMinimap();
+    }
+}
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 100, g: 100, b: 100 };
+}
+
+function drawMinimap() {
+    const canvas = document.getElementById('minimapCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, width, height);
+    
+    const worldMinX = -100;
+    const worldMaxX = 100;
+    const worldMinZ = -130;
+    const worldMaxZ = 130;
+    
+    const worldWidth = worldMaxX - worldMinX;
+    const worldHeight = worldMaxZ - worldMinZ;
+    
+    const padding = 8;
+    const mapWidth = width - padding * 2;
+    const mapHeight = height - padding * 2;
+    
+    function worldToMap(x, z) {
+        const mapX = padding + ((x - worldMinX) / worldWidth) * mapWidth;
+        const mapY = padding + ((worldMaxZ - z) / worldHeight) * mapHeight;
+        return { x: mapX, y: mapY };
+    }
+    
+    function worldToMapSize(width, depth) {
+        return {
+            w: (width / worldWidth) * mapWidth,
+            h: (depth / worldHeight) * mapHeight
+        };
+    }
+    
+    ctx.fillStyle = '#7CBA5F';
+    ctx.fillRect(padding, padding, mapWidth, mapHeight);
+    
+    ctx.fillStyle = '#444444';
+    const roadY = worldToMap(0, 0).y;
+    ctx.fillRect(padding, roadY - 2, mapWidth, 4);
+    
+    const verticalRoadX = worldToMap(0, 0).x;
+    ctx.fillRect(verticalRoadX - 2, padding, 4, mapHeight);
+    
+    for (let i = -40; i <= 40; i += 80) {
+        const crossX = worldToMap(i, 0).x;
+        ctx.fillRect(crossX - 2, roadY - 35, 4, 70);
+    }
+    
+    const allBuildings = [];
+    Object.values(CAMPUS_DATA).forEach(campus => {
+        campus.buildings.forEach(building => {
+            allBuildings.push(building);
+        });
+    });
+    
+    allBuildings.forEach(building => {
+        const pos = worldToMap(building.position.x, building.position.z);
+        const size = worldToMapSize(building.size.width, building.size.depth);
+        
+        const color = hexToRgb('#' + building.color.toString(16).padStart(6, '0'));
+        ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)`;
+        ctx.fillRect(pos.x - size.w / 2, pos.y - size.h / 2, size.w, size.h);
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(pos.x - size.w / 2, pos.y - size.h / 2, size.w, size.h);
+    });
+    
+    ctx.fillStyle = '#4CAF50';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    
+    const southLabelPos = worldToMap(0, -100);
+    ctx.fillText('南区', southLabelPos.x, southLabelPos.y);
+    
+    const northLabelPos = worldToMap(0, 100);
+    ctx.fillText('北区', northLabelPos.x, northLabelPos.y);
+    
+    ctx.fillStyle = '#FFC107';
+    ctx.font = 'bold 8px Arial';
+    ctx.fillText('N', width / 2, padding + 10);
+    ctx.fillText('S', width / 2, height - 5);
+    ctx.fillText('E', width - 5, height / 2 + 3);
+    ctx.fillText('W', padding + 5, height / 2 + 3);
 }
 
 function animate() {
