@@ -929,6 +929,10 @@ function loadCampusGLB() {
                     child.castShadow = true;
                     child.receiveShadow = true;
                     
+                    if (child.material) {
+                        child.material = child.material.clone();
+                    }
+                    
                     child.userData = {
                         id: child.name || 'campus_building',
                         name: child.name || '校园建筑',
