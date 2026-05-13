@@ -410,6 +410,107 @@ const CAMPUS_DATA = {
 
 let gltfLoader;
 
+const NAME_MAPPING = {
+    'tsg': {
+        name: '浙江树人学院图书馆',
+        comment: '藏书丰富，是学生学习和研究的重要场所'
+    },
+    'srlt': {
+        name: '树人礼堂',
+        comment: '学校举办各类大型活动和会议的重要场所'
+    },
+    'srzj': {
+        name: '树人之家',
+        comment: '创业园区'
+    },
+    'jggcsyl': {
+        name: '结构工程实验楼',
+        comment: '配备专业实验设备，用于工程实践教学'
+    },
+    'msg': {
+        name: '美术馆',
+        comment: '用于艺术类课程教学和作品展览'
+    },
+    'dysydl': {
+        name: '第一实验大楼',
+        comment: '配备各类专业实验设备，支持多学科实验'
+    },
+    'desydl': {
+        name: '第二实验大楼',
+        comment: '支持实践教学和科研项目'
+    },
+    'dssydl': {
+        name: '第三实验大楼',
+        comment: '主要用于理工科实验教学'
+    },
+    'xzl': {
+        name: '行政楼',
+        comment: '学校行政办公中心，各职能部门所在地'
+    },
+    'zjmdl': {
+        name: '查济民大楼',
+        comment: '重要的教学科研大楼'
+    },
+    'qcy': {
+        name: '清乐园',
+        comment: '学生宿舍'
+    },
+    'jxkxyjy': {
+        name: '交叉科学研究院',
+        comment: '致力于跨学科研究和创新'
+    },
+    'hyxy': {
+        name: '行业学院',
+        comment: '产教融合，培养应用型人才'
+    },
+    'dsg': {
+        name: '雕塑馆',
+        comment: '展示雕塑艺术作品的艺术空间'
+    },
+    'tjc': {
+        name: '田径场',
+        comment: '标准400米塑胶跑道，内设足球场'
+    },
+    'tyg': {
+        name: '体育馆',
+        comment: '设施完善，包括篮球场、羽毛球场等'
+    },
+    'zqd': {
+        name: '致勤东',
+        comment: '宿舍楼'
+    },
+    'zqx': {
+        name: '致勤西',
+        comment: '宿舍楼'
+    },
+    'zhl': {
+        name: '综合楼',
+        comment: '宿舍楼'
+    },
+    'xm': {
+        name: '校门',
+        comment: '学校的标志性建筑，师生进出的主要通道'
+    },
+    'bxqnm': {
+        name: '北校区南门',
+        comment: '北校区的主要出入口之一'
+    }
+};
+
+function applyNameMapping(id) {
+    if (NAME_MAPPING[id]) {
+        return NAME_MAPPING[id].name;
+    }
+    return id;
+}
+
+function getCommentMapping(id) {
+    if (NAME_MAPPING[id]) {
+        return NAME_MAPPING[id].comment;
+    }
+    return '';
+}
+
 function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87CEEB);
@@ -515,11 +616,12 @@ function createBuilding(data) {
     );
     building.castShadow = true;
     building.receiveShadow = true;
+    const comment = getCommentMapping(data.id);
     building.userData = {
         id: data.id,
-        name: data.name,
+        name: applyNameMapping(data.id),
         type: data.type,
-        info: data.info,
+        info: comment || data.info,
         campus: data.campus
     };
 
@@ -942,11 +1044,12 @@ function loadCampusGLB() {
                         child.material = child.material.clone();
                     }
                     
+                    const comment = getCommentMapping(child.name);
                     child.userData = {
                         id: child.name || 'campus_building',
-                        name: child.name || '校园建筑',
+                        name: applyNameMapping(child.name) || '校园建筑',
                         type: 'building',
-                        info: '校园模型建筑',
+                        info: comment || '校园模型建筑',
                         campus: 'south'
                     };
                 }
