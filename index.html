@@ -380,6 +380,26 @@
                 <button class="btn" onclick="showAllInfo()">全部介绍</button>
             </div>
         </div>
+
+        <div class="control-section">
+            <h3>🌞 时间切换</h3>
+            <div class="btn-group">
+                <button class="btn time-btn active" onclick="setTimeOfDay('day')">☀️ 白天</button>
+                <button class="btn time-btn" onclick="setTimeOfDay('sunset')">🌅 黄昏</button>
+                <button class="btn time-btn" onclick="setTimeOfDay('night')">🌙 夜晚</button>
+                <button class="btn time-btn" onclick="setTimeOfDay('dawn')">🌄 黎明</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>🌤️ 天气效果</h3>
+            <div class="btn-group">
+                <button class="btn weather-btn active" onclick="setWeather('sunny')">☀️ 晴天</button>
+                <button class="btn weather-btn" onclick="setWeather('cloudy')">☁️ 多云</button>
+                <button class="btn weather-btn" onclick="setWeather('rain')">🌧️ 下雨</button>
+                <button class="btn weather-btn" onclick="setWeather('snow')">❄️ 下雪</button>
+            </div>
+        </div>
     </div>
 
     <div class="ui-panel legend-panel">

@@ -7,6 +7,13 @@ let raycaster, mouse;
 let selectedObject = null;
 let isAutoRotating = false;
 
+let skyBox;
+let ambientLight, directionalLight, hemisphereLight;
+let currentTimeOfDay = 'day';
+let currentWeather = 'sunny';
+let rainParticles = [];
+let snowParticles = [];
+
 const CAMPUS_DATA = {
     south: {
         name: '南校区',
@@ -433,6 +440,7 @@ function init() {
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
 
+    createSkyBox();
     setupLights();
     createGround();
     createCampusBuildings();
@@ -440,6 +448,7 @@ function init() {
     createWalls();
     createVegetation();
     createMiddleRoad();
+    createWeatherParticles();
 
     window.addEventListener('resize', onWindowResize);
     renderer.domElement.addEventListener('click', onMouseClick);
@@ -458,10 +467,10 @@ function init() {
 }
 
 function setupLights() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(100, 150, 80);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
@@ -474,7 +483,7 @@ function setupLights() {
     directionalLight.shadow.camera.bottom = -150;
     scene.add(directionalLight);
 
-    const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x3D5C3D, 0.4);
+    hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x3D5C3D, 0.4);
     scene.add(hemisphereLight);
 }
 
@@ -1248,6 +1257,204 @@ function showAllInfo() {
     showInfo('校区总览', allInfo);
 }
 
+function createSkyBox() {
+    const skyBoxGeometry = new THREE.BoxGeometry(500, 500, 500);
+    const skyBoxMaterial = new THREE.ShaderMaterial({
+        vertexShader: `
+            varying vec3 vWorldPosition;
+            void main() {
+                vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                vWorldPosition = worldPosition.xyz;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vWorldPosition;
+            uniform vec3 topColor;
+            uniform vec3 bottomColor;
+            uniform float offset;
+            uniform float exponent;
+            void main() {
+                float h = normalize(vWorldPosition + offset).y;
+                gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+            }
+        `,
+        uniforms: {
+            topColor: { value: new THREE.Color(0x87CEEB) },
+            bottomColor: { value: new THREE.Color(0xE0F6FF) },
+            offset: { value: 33 },
+            exponent: { value: 0.6 }
+        },
+        side: THREE.BackSide
+    });
+    
+    skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
+    scene.add(skyBox);
+}
+
+function createWeatherParticles() {
+    for (let i = 0; i < 500; i++) {
+        const rainGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+        const rainMaterial = new THREE.MeshBasicMaterial({ color: 0xAAAAFF, transparent: true, opacity: 0.6 });
+        const rainDrop = new THREE.Mesh(rainGeometry, rainMaterial);
+        rainDrop.position.set(
+            (Math.random() - 0.5) * 400,
+            Math.random() * 150,
+            (Math.random() - 0.5) * 400
+        );
+        rainDrop.userData.speed = 2 + Math.random() * 3;
+        rainDrop.userData.originalY = rainDrop.position.y;
+        rainDrop.visible = false;
+        rainParticles.push(rainDrop);
+        scene.add(rainDrop);
+
+        const snowGeometry = new THREE.SphereGeometry(0.8, 8, 8);
+        const snowMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.8 });
+        const snowflake = new THREE.Mesh(snowGeometry, snowMaterial);
+        snowflake.position.set(
+            (Math.random() - 0.5) * 400,
+            Math.random() * 150,
+            (Math.random() - 0.5) * 400
+        );
+        snowflake.userData.speed = 0.5 + Math.random() * 0.5;
+        snowflake.userData.sway = Math.random() * Math.PI * 2;
+        snowflake.userData.swaySpeed = 0.02 + Math.random() * 0.02;
+        snowflake.userData.originalY = snowflake.position.y;
+        snowflake.visible = false;
+        snowParticles.push(snowflake);
+        scene.add(snowflake);
+    }
+}
+
+function updateWeatherParticles() {
+    if (currentWeather === 'rain') {
+        rainParticles.forEach(drop => {
+            drop.visible = true;
+            drop.position.y -= drop.userData.speed;
+            if (drop.position.y < 0) {
+                drop.position.y = drop.userData.originalY;
+            }
+        });
+    } else {
+        rainParticles.forEach(drop => drop.visible = false);
+    }
+
+    if (currentWeather === 'snow') {
+        snowParticles.forEach(snowflake => {
+            snowflake.visible = true;
+            snowflake.position.y -= snowflake.userData.speed;
+            snowflake.position.x += Math.sin(snowflake.userData.sway) * 0.3;
+            snowflake.userData.sway += snowflake.userData.swaySpeed;
+            if (snowflake.position.y < 0) {
+                snowflake.position.y = snowflake.userData.originalY;
+            }
+        });
+    } else {
+        snowParticles.forEach(snowflake => snowflake.visible = false);
+    }
+}
+
+function setTimeOfDay(time) {
+    currentTimeOfDay = time;
+    document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const timeSettings = {
+        day: {
+            skyTop: 0x87CEEB,
+            skyBottom: 0xE0F6FF,
+            ambient: 0xFFFFFF,
+            ambientIntensity: 0.6,
+            directional: 0xFFFFFF,
+            directionalIntensity: 0.8,
+            fog: 0x87CEEB,
+            fogNear: 150,
+            fogFar: 350
+        },
+        sunset: {
+            skyTop: 0xFF6B35,
+            skyBottom: 0xFFE4B5,
+            ambient: 0xFFD4A3,
+            ambientIntensity: 0.5,
+            directional: 0xFFAA66,
+            directionalIntensity: 0.6,
+            fog: 0xFFB347,
+            fogNear: 120,
+            fogFar: 300
+        },
+        night: {
+            skyTop: 0x0A0A20,
+            skyBottom: 0x1A1A40,
+            ambient: 0x333366,
+            ambientIntensity: 0.2,
+            directional: 0xCCCCFF,
+            directionalIntensity: 0.3,
+            fog: 0x0A0A20,
+            fogNear: 100,
+            fogFar: 280
+        },
+        dawn: {
+            skyTop: 0xFFB347,
+            skyBottom: 0xFFE4E1,
+            ambient: 0xFFE4E1,
+            ambientIntensity: 0.35,
+            directional: 0xFFB347,
+            directionalIntensity: 0.4,
+            fog: 0xFFDAB9,
+            fogNear: 130,
+            fogFar: 320
+        }
+    };
+
+    const settings = timeSettings[time];
+    if (settings) {
+        skyBox.material.uniforms.topColor.value.setHex(settings.skyTop);
+        skyBox.material.uniforms.bottomColor.value.setHex(settings.skyBottom);
+        ambientLight.color.setHex(settings.ambient);
+        ambientLight.intensity = settings.ambientIntensity;
+        directionalLight.color.setHex(settings.directional);
+        directionalLight.intensity = settings.directionalIntensity;
+        scene.fog.color.setHex(settings.fog);
+        scene.fog.near = settings.fogNear;
+        scene.fog.far = settings.fogFar;
+    }
+}
+
+function setWeather(weather) {
+    currentWeather = weather;
+    document.querySelectorAll('.weather-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const weatherSettings = {
+        sunny: {
+            fogEnabled: false,
+            fogDensity: 0
+        },
+        cloudy: {
+            fogEnabled: true,
+            fogDensity: 0.003
+        },
+        rain: {
+            fogEnabled: true,
+            fogDensity: 0.008
+        },
+        snow: {
+            fogEnabled: true,
+            fogDensity: 0.006
+        }
+    };
+
+    const settings = weatherSettings[weather];
+    if (settings) {
+        scene.fog.enabled = settings.fogEnabled;
+        if (settings.fogEnabled) {
+            scene.fog = new THREE.FogExp2(scene.fog.color.getHex(), settings.fogDensity);
+        } else {
+            scene.fog = new THREE.Fog(scene.fog.color.getHex(), 150, 350);
+        }
+    }
+}
+
 function updateCompass() {
     const compass = document.getElementById('compass');
     if (!compass) return;
@@ -1260,6 +1467,7 @@ function updateCompass() {
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    updateWeatherParticles();
     renderer.render(scene, camera);
 
     updateCompass();
