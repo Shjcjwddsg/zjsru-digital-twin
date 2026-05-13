@@ -1292,27 +1292,6 @@ function animateCamera(targetPos, targetLookAt) {
     updateCamera();
 }
 
-function showCampus(campusType) {
-    document.querySelectorAll('.control-panel .btn-group:nth-child(2) .btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    buildings.forEach(group => {
-        let shouldShow = true;
-        group.traverse(child => {
-            if (child.isMesh && child.userData.campus) {
-                if (campusType === 'south' && child.userData.campus !== 'south') {
-                    shouldShow = false;
-                } else if (campusType === 'north' && child.userData.campus !== 'north') {
-                    shouldShow = false;
-                }
-            }
-        });
-        group.visible = shouldShow;
-    });
-}
-
 function toggleLayer(layerType, visible) {
     switch (layerType) {
         case 'buildings':

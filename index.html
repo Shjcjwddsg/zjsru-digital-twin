@@ -146,14 +146,8 @@
             background: rgba(255, 0, 0, 0.3);
         }
 
-        .legend-panel {
-            top: 100px;
-            left: 20px;
-            width: 180px;
-        }
-
         .compass-panel {
-            bottom: 20px;
+            bottom: 10%;
             right: 20px;
             width: 120px;
             height: 120px;
@@ -236,21 +230,6 @@
             color: #FFC107;
             font-weight: bold;
             font-size: 14px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            font-size: 12px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-            border-radius: 3px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .layer-toggle {
@@ -403,27 +382,6 @@
             display: block;
             margin: 0 auto;
         }
-
-        .minimap-legend {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-        }
-
-        .minimap-legend .legend-item {
-            display: flex;
-            align-items: center;
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .minimap-legend .color-box {
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-            margin-right: 5px;
-        }
     </style>
 </head>
 <body>
@@ -450,14 +408,7 @@
             </div>
         </div>
 
-        <div class="control-section">
-            <h3>🏫 校区选择</h3>
-            <div class="btn-group">
-                <button class="btn active" onclick="showCampus('all')">全部显示</button>
-                <button class="btn" onclick="showCampus('south')">南校区</button>
-                <button class="btn" onclick="showCampus('north')">北校区</button>
-            </div>
-        </div>
+
 
         <div class="control-section">
             <h3>📊 图层控制</h3>
@@ -509,33 +460,7 @@
         </div>
     </div>
 
-    <div class="ui-panel legend-panel">
-        <h3>🗺️ 图例说明</h3>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #9CAFB7;"></div>
-            <span>教学楼 ▲</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #8B7355;"></div>
-            <span>图书馆 ⛶</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #D4C4A8;"></div>
-            <span>宿舍楼 ┬</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #D4A574;"></div>
-            <span>体育馆/食堂</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #6B8E5B;"></div>
-            <span>植被/绿地</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: #555555;"></div>
-            <span>道路/围墙</span>
-        </div>
-    </div>
+    
 
     <div class="ui-panel compass-panel">
         <div class="compass" id="compass">
@@ -568,16 +493,6 @@
         </div>
         <div class="minimap-content">
             <canvas id="minimapCanvas" width="180" height="200"></canvas>
-            <div class="minimap-legend">
-                <div class="legend-item"><span class="color-box" style="background: #8B7355"></span>图书馆</div>
-                <div class="legend-item"><span class="color-box" style="background: #9CAFB7"></span>教学楼</div>
-                <div class="legend-item"><span class="color-box" style="background: #8BA4B4"></span>实验楼</div>
-                <div class="legend-item"><span class="color-box" style="background: #D4C4A8"></span>宿舍楼</div>
-                <div class="legend-item"><span class="color-box" style="background: #D4A574"></span>服务设施</div>
-                <div class="legend-item"><span class="color-box" style="background: #FF6B6B"></span>体育设施</div>
-                <div class="legend-item"><span class="color-box" style="background: #4A7C3F"></span>绿地</div>
-                <div class="legend-item"><span class="color-box" style="background: #444444"></span>道路</div>
-            </div>
         </div>
     </div>
 
