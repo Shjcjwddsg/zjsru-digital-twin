@@ -1,0 +1,1 @@
+{"name": "zjsru-digital-twin", "version": "1.0.0", "description": "浙江树人学院拱宸桥校区数字孪生交互系统", "main": "src/main.js", "scripts": {"start": "npx http-server . -p 8080 -c-1", "dev": "npx live-server --port=8080"}, "keywords": ["three.js", "digital-twin", "campus", "3d", "visualization"], "author": "浙江树人学院学生", "license": "MIT", "dependencies": {"three": "^0.160.0"}}

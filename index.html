@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浙江树人学院拱宸桥校区 - 数字孪生系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .ui-panel {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .title-panel {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            padding: 15px 30px;
+        }
+
+        .title-panel h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #4CAF50;
+        }
+
+        .title-panel p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .control-panel {
+            top: 100px;
+            right: 20px;
+            width: 220px;
+        }
+
+        .control-section {
+            margin-bottom: 15px;
+        }
+
+        .control-section h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #4CAF50;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: #4CAF50;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .info-panel {
+            bottom: 20px;
+            left: 20px;
+            max-width: 350px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-panel h2 {
+            font-size: 18px;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .legend-panel {
+            top: 100px;
+            left: 20px;
+            width: 180px;
+        }
+
+        .compass-panel {
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .compass {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #4CAF50;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .compass-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(calc(-1 * var(--rotation, 0deg)));
+        }
+
+        .compass::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 40px;
+            background: linear-gradient(to bottom, #FF0000, #CC0000);
+            border-radius: 4px;
+            top: 5px;
+            transform-origin: center bottom;
+        }
+
+        .compass::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 30px;
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            border-radius: 3px;
+            bottom: 5px;
+            transform-origin: center top;
+        }
+
+        .compass-n {
+            position: absolute;
+            top: 8px;
+            color: #FF0000;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .compass-s {
+            position: absolute;
+            bottom: 8px;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .compass-e {
+            position: absolute;
+            right: 10px;
+            color: #FFC107;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .compass-w {
+            position: absolute;
+            left: 10px;
+            color: #FFC107;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .layer-toggle input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: #4CAF50;
+        }
+
+        .help-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.6;
+            z-index: 99;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(76, 175, 80, 0.2);
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载浙江树人学院数字孪生系统...</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-panel title-panel">
+        <h1>浙江树人学院拱宸桥校区</h1>
+        <p>数字孪生交互系统 | 浙江树人学院期中作业</p>
+    </div>
+
+    <div class="ui-panel control-panel">
+        <div class="control-section">
+            <h3>📍 视角切换</h3>
+            <div class="btn-group">
+                <button class="btn active" onclick="setView('perspective')">透视视角</button>
+                <button class="btn" onclick="setView('birdseye')">鸟瞰视角</button>
+                <button class="btn" onclick="setView('southgate')">南门视角</button>
+                <button class="btn" onclick="setView('northgate')">北门视角</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>🏫 校区选择</h3>
+            <div class="btn-group">
+                <button class="btn active" onclick="showCampus('all')">全部显示</button>
+                <button class="btn" onclick="showCampus('south')">南校区</button>
+                <button class="btn" onclick="showCampus('north')">北校区</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>📊 图层控制</h3>
+            <div class="layer-toggle">
+                <input type="checkbox" id="layerBuildings" checked onchange="toggleLayer('buildings', this.checked)">
+                <label for="layerBuildings">建筑群</label>
+            </div>
+            <div class="layer-toggle">
+                <input type="checkbox" id="layerRoads" checked onchange="toggleLayer('roads', this.checked)">
+                <label for="layerRoads">道路系统</label>
+            </div>
+            <div class="layer-toggle">
+                <input type="checkbox" id="layerVegetation" checked onchange="toggleLayer('vegetation', this.checked)">
+                <label for="layerVegetation">植被绿化</label>
+            </div>
+            <div class="layer-toggle">
+                <input type="checkbox" id="layerWalls" checked onchange="toggleLayer('walls', this.checked)">
+                <label for="layerWalls">围墙边界</label>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>⚙️ 其他功能</h3>
+            <div class="btn-group">
+                <button class="btn" onclick="toggleAutoRotate()">自动旋转</button>
+                <button class="btn" onclick="resetCamera()">重置视角</button>
+                <button class="btn" onclick="showAllInfo()">全部介绍</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-panel legend-panel">
+        <h3>🗺️ 图例说明</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9CAFB7;"></div>
+            <span>教学楼 ▲</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #8B7355;"></div>
+            <span>图书馆 ⛶</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #D4C4A8;"></div>
+            <span>宿舍楼 ┬</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #D4A574;"></div>
+            <span>体育馆/食堂</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #6B8E5B;"></div>
+            <span>植被/绿地</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #555555;"></div>
+            <span>道路/围墙</span>
+        </div>
+    </div>
+
+    <div class="ui-panel compass-panel">
+        <div class="compass" id="compass">
+            <div class="compass-inner">
+                <span class="compass-n">北</span>
+                <span class="compass-s">南</span>
+                <span class="compass-e">东</span>
+                <span class="compass-w">西</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-panel info-panel" id="infoPanel">
+        <button class="close-btn" onclick="hideInfo()">×</button>
+        <h2 id="infoTitle">建筑名称</h2>
+        <p id="infoContent">建筑信息内容</p>
+    </div>
+
+    <div class="help-text">
+        🖱️ 鼠标左键拖动旋转 | 滚轮缩放 | 右键平移<br>
+        👆 点击建筑查看详情 | 使用右侧面板控制视图
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>
